@@ -1,0 +1,543 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>Paraphrase Context Challenge</title>
+<style>
+:root{
+  --bg:#050b12;--bg2:#08131f;--panel:#0c1827;--card:#112238;
+  --line:rgba(255,255,255,.10);--line2:rgba(255,255,255,.18);
+  --text:#f7f8fb;--muted:#9aaabd;--gold:#d8b35c;--gold2:#f2d98e;
+  --cyan:#6fd0cd;--cyan2:rgba(111,208,205,.12);
+  --green:#77d79e;--green2:rgba(119,215,158,.12);
+  --red:#ef9094;--red2:rgba(239,144,148,.11);
+  --shadow:0 30px 90px rgba(0,0,0,.42)
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0;min-height:100vh;color:var(--text);
+  font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  background:
+    radial-gradient(circle at 12% 8%,rgba(111,208,205,.09),transparent 27%),
+    radial-gradient(circle at 88% 12%,rgba(216,179,92,.09),transparent 26%),
+    linear-gradient(155deg,var(--bg),#07111d 58%,#03070d)
+}
+button,input{font:inherit}
+button{cursor:pointer}
+button:focus-visible,input:focus-visible{outline:3px solid rgba(111,208,205,.45);outline-offset:3px}
+.app{width:min(1180px,calc(100% - 26px));margin:20px auto 48px}
+.shell{
+  position:relative;overflow:hidden;border:1px solid var(--line);border-radius:30px;
+  background:rgba(6,14,24,.95);box-shadow:var(--shadow);backdrop-filter:blur(18px)
+}
+.shell:before{
+  content:"";position:absolute;inset:0;pointer-events:none;
+  background:linear-gradient(120deg,rgba(255,255,255,.025),transparent 35%,transparent 70%,rgba(216,179,92,.02))
+}
+.topbar{
+  position:relative;z-index:2;display:flex;align-items:center;justify-content:space-between;gap:14px;
+  padding:16px 22px;border-bottom:1px solid var(--line);background:rgba(3,8,14,.68)
+}
+.brand{display:flex;align-items:center;gap:12px}
+.logo{
+  width:42px;height:42px;border-radius:13px;display:grid;place-items:center;
+  border:1px solid rgba(216,179,92,.42);
+  background:linear-gradient(145deg,rgba(216,179,92,.17),rgba(111,208,205,.07));
+  color:var(--gold2);font-weight:950
+}
+.brand-title{font-size:.78rem;letter-spacing:.18em;font-weight:950;color:var(--gold2)}
+.brand-sub{margin-top:2px;color:var(--muted);font-size:.8rem}
+.top-actions{display:flex;gap:8px;flex-wrap:wrap}
+.btn,.icon-btn,.choice{
+  border:1px solid var(--line2);color:var(--text);background:rgba(255,255,255,.045);
+  transition:.17s ease
+}
+.icon-btn{min-height:42px;border-radius:12px;padding:0 13px}
+.btn{min-height:48px;border-radius:14px;padding:0 18px;font-weight:850}
+.btn:hover,.icon-btn:hover,.choice:hover{background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.28)}
+.btn.primary{
+  border-color:rgba(216,179,92,.64);
+  background:linear-gradient(135deg,#caa349,var(--gold2));color:#08111b;font-weight:950;
+  box-shadow:0 12px 30px rgba(216,179,92,.14)
+}
+.btn.primary:hover{transform:translateY(-1px);filter:brightness(1.04)}
+.view{position:relative;z-index:1;padding:clamp(22px,4vw,44px)}
+.hidden{display:none!important}
+.eyebrow{font-size:.72rem;letter-spacing:.21em;font-weight:950;color:var(--gold2);text-transform:uppercase}
+h1,h2,h3,p{margin-top:0}
+h1{font-size:clamp(2.35rem,5vw,4.6rem);line-height:.98;letter-spacing:-.055em;margin-bottom:18px}
+h2{font-size:clamp(1.7rem,3vw,2.55rem);letter-spacing:-.035em;margin-bottom:8px}
+h3{font-size:1.05rem;margin-bottom:7px}
+.lead{max-width:790px;color:#ccd5df;font-size:clamp(1rem,1.6vw,1.17rem);line-height:1.75}
+.muted{color:var(--muted)}
+.glass{
+  border:1px solid var(--line);border-radius:24px;
+  background:linear-gradient(155deg,rgba(255,255,255,.052),rgba(255,255,255,.022))
+}
+.hero-grid{display:grid;grid-template-columns:1.16fr .84fr;gap:28px;align-items:start}
+.flow{display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin-top:24px}
+.flow span:not(.arrow){
+  padding:9px 13px;border-radius:999px;border:1px solid var(--line);
+  background:rgba(255,255,255,.034);font-size:.77rem;font-weight:900;letter-spacing:.05em
+}
+.arrow{color:var(--gold);font-weight:950}
+.setup-card{padding:22px}
+.names{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px}
+.field label{display:block;margin:0 0 7px 2px;font-size:.76rem;font-weight:850;color:#cbd5df}
+.field input{width:100%;min-height:48px;padding:0 14px;border-radius:13px;border:1px solid var(--line2);background:#091523;color:var(--text)}
+.rules{margin-top:18px}
+.rule{display:grid;grid-template-columns:auto 1fr;gap:12px;align-items:start;padding:12px 0;border-bottom:1px solid var(--line)}
+.rule:last-child{border-bottom:0}
+.rule-num{display:grid;place-items:center;width:31px;height:31px;border-radius:9px;background:var(--cyan2);color:var(--cyan);font-weight:950}
+
+.game-head{display:grid;grid-template-columns:1fr auto;gap:18px;align-items:center}
+.meta{display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin-top:9px}
+.pill{padding:7px 10px;border-radius:999px;border:1px solid var(--line);background:rgba(255,255,255,.035);font-size:.74rem;font-weight:850}
+.pill.cyan{color:var(--cyan);border-color:rgba(111,208,205,.3);background:var(--cyan2)}
+.timer{
+  --pct:100;width:80px;height:80px;border-radius:50%;display:grid;place-items:center;position:relative;
+  background:conic-gradient(var(--cyan) calc(var(--pct)*1%),rgba(255,255,255,.09) 0)
+}
+.timer:after{content:"";position:absolute;inset:6px;border-radius:50%;background:#091523}
+.timer strong{z-index:1;font-size:1.27rem}
+.timer small{position:absolute;z-index:1;top:47px;color:var(--muted);font-size:.61rem;letter-spacing:.09em}
+.progress{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:24px 0 18px}
+.progress div{height:6px;border-radius:99px;background:rgba(255,255,255,.07)}
+.progress .active,.progress .done{background:linear-gradient(90deg,var(--gold),var(--cyan))}
+
+.phase-card{padding:clamp(18px,3vw,28px)}
+.phase-head{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:17px}
+.phase-head p{margin:0;color:var(--muted);font-size:.88rem}
+.context{
+  color:#1a2430;background:#f7f4ec;border-radius:18px;padding:clamp(21px,3vw,31px);
+  box-shadow:0 16px 42px rgba(0,0,0,.23);line-height:1.82;font-size:1rem
+}
+.context p{margin-bottom:14px}
+.context p:last-child{margin-bottom:0}
+.controls{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-top:16px}
+.status{color:var(--muted);font-size:.84rem}
+
+.question-box{
+  padding:clamp(20px,3vw,30px);border-radius:22px;border:1px solid rgba(111,208,205,.19);
+  background:linear-gradient(145deg,rgba(111,208,205,.07),rgba(255,255,255,.024))
+}
+.sentence{margin-top:12px;font-size:clamp(1.23rem,2.5vw,1.95rem);line-height:1.58;font-weight:850;letter-spacing:-.02em}
+.blank{display:inline-flex;min-width:145px;justify-content:center;padding:0 9px 3px;color:var(--gold2);border-bottom:3px solid var(--gold)}
+.choices{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px}
+.choice{
+  min-height:68px;border-radius:16px;text-align:left;padding:15px 17px;display:flex;align-items:center;gap:12px;font-weight:850
+}
+.choice .letter{display:grid;place-items:center;flex:0 0 auto;width:31px;height:31px;border-radius:9px;background:rgba(216,179,92,.10);color:var(--gold2);font-size:.82rem}
+.choice.correct{border-color:rgba(119,215,158,.65);background:var(--green2)}
+.choice.wrong{border-color:rgba(239,144,148,.65);background:var(--red2)}
+
+.result-grid{display:grid;gap:16px}
+.verdict{display:flex;align-items:center;gap:14px;padding:18px;border-radius:18px}
+.verdict.good{border:1px solid rgba(119,215,158,.34);background:var(--green2)}
+.verdict.bad{border:1px solid rgba(239,144,148,.32);background:var(--red2)}
+.verdict-icon{font-size:1.75rem}
+.rebuild{padding:20px}
+.pair-grid{display:grid;grid-template-columns:1fr auto 1fr;gap:12px;align-items:stretch}
+.pair-card{padding:18px;border-radius:18px;border:1px solid var(--line);background:rgba(255,255,255,.032)}
+.pair-label{font-size:.69rem;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);font-weight:950}
+.pair-main{margin-top:7px;font-size:1.08rem;font-weight:950}
+.pair-arrow{display:grid;place-items:center;color:var(--gold);font-size:1.55rem;font-weight:950}
+.explain{padding:19px;border-radius:18px;border:1px solid var(--line);background:rgba(255,255,255,.024);line-height:1.72;color:#d5dde7}
+.explain strong{color:var(--text)}
+.evidence{display:grid;gap:8px;margin-top:12px}
+.evidence div{padding:10px 12px;border-radius:12px;background:rgba(111,208,205,.06);border:1px solid rgba(111,208,205,.12);font-size:.9rem}
+.distractors{margin-top:14px;padding-top:14px;border-top:1px solid var(--line)}
+.distractors div{margin-top:7px;font-size:.9rem;color:var(--muted)}
+.selected{margin-top:14px;padding-top:12px;border-top:1px solid var(--line);font-size:.92rem;color:var(--muted)}
+
+.summary-head{text-align:center;max-width:760px;margin:0 auto}
+.winners{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:26px 0 18px}
+.winner{min-height:118px;padding:18px;border-radius:19px;border:1px solid var(--line);background:linear-gradient(160deg,rgba(216,179,92,.085),rgba(255,255,255,.024));display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}
+.winner-icon{font-size:1.4rem;margin-bottom:7px}
+.winner small{margin-top:5px;color:var(--muted)}
+.table-wrap{overflow:auto;border:1px solid var(--line);border-radius:18px}
+table{width:100%;min-width:720px;border-collapse:collapse}
+th,td{padding:14px 16px;text-align:left;border-bottom:1px solid var(--line)}
+th{background:rgba(255,255,255,.025);color:var(--muted);font-size:.7rem;letter-spacing:.14em;text-transform:uppercase}
+td{font-size:.91rem}
+tr:last-child td{border-bottom:0}
+.recap{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-top:18px}
+.recap-card{padding:17px;border-radius:18px;border:1px solid var(--line);background:rgba(255,255,255,.028)}
+.recap-pair{margin-top:6px;font-weight:900}
+.footer{position:relative;z-index:1;display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;padding:15px 22px;border-top:1px solid var(--line);color:var(--muted);font-size:.77rem}
+
+@media(max-width:860px){
+  .hero-grid{grid-template-columns:1fr}
+  .winners{grid-template-columns:1fr 1fr}
+  .pair-grid{grid-template-columns:1fr}
+  .pair-arrow{transform:rotate(90deg)}
+}
+@media(max-width:620px){
+  .app{width:min(100% - 16px,1180px);margin:8px auto 24px}
+  .shell{border-radius:22px}.topbar{padding:14px}.brand-sub{display:none}
+  .view{padding:19px 14px 25px}.names,.choices,.winners,.recap{grid-template-columns:1fr}
+  .timer{width:69px;height:69px}.context{padding:18px 16px}
+}
+@media(prefers-reduced-motion:reduce){
+  *,*:before,*:after{animation:none!important;transition:none!important;scroll-behavior:auto!important}
+}
+</style>
+</head>
+<body>
+<main class="app">
+<div class="shell">
+<header class="topbar">
+  <div class="brand">
+    <div class="logo">P↔</div>
+    <div><div class="brand-title">PARAPHRASE CONTEXT CHALLENGE</div><div class="brand-sub">Read the meaning. Match the wording.</div></div>
+  </div>
+  <div class="top-actions">
+    <button id="soundBtn" class="icon-btn" type="button" aria-pressed="true">Sound: On</button>
+    <button id="resetBtn" class="icon-btn" type="button">Reset</button>
+  </div>
+</header>
+
+<section id="setupView" class="view">
+  <div class="hero-grid">
+    <div>
+      <div class="eyebrow">4 questions • 4 players</div>
+      <h1>Read the context.<br>Then catch the paraphrase.</h1>
+      <p class="lead">Mỗi người đọc một đoạn hoàn chỉnh. Khi đoạn văn biến mất, game đưa ra một câu tóm tắt hoặc diễn đạt lại ý của cả ngữ cảnh và ẩn một paraphrase. Chọn đáp án giữ đúng nghĩa nhất.</p>
+      <div class="flow"><span>READ</span><span class="arrow">→</span><span>HIDE</span><span class="arrow">→</span><span>MATCH</span><span class="arrow">→</span><span>EXPLAIN</span></div>
+
+      <div class="glass setup-card" style="margin-top:22px">
+        <div class="eyebrow">How it works</div>
+        <div class="rules">
+          <div class="rule"><span class="rule-num">1</span><div><b>Đọc toàn bộ ngữ cảnh.</b><div class="muted" style="margin-top:4px;font-size:.9rem">Thời gian được điều chỉnh theo độ dài từng đoạn.</div></div></div>
+          <div class="rule"><span class="rule-num">2</span><div><b>Ngữ cảnh được ẩn.</b><div class="muted" style="margin-top:4px;font-size:.9rem">Câu hỏi dùng ý tổng hợp của đoạn, không chỉ lấy một câu đơn lẻ.</div></div></div>
+          <div class="rule"><span class="rule-num">3</span><div><b>Giải thích ngay sau khi chọn.</b><div class="muted" style="margin-top:4px;font-size:.9rem">Hiện lại câu, paraphrase đúng, bằng chứng trong đoạn và lý do loại đáp án nhiễu.</div></div></div>
+        </div>
+      </div>
+    </div>
+
+    <aside class="glass setup-card">
+      <div class="eyebrow">Players</div>
+      <h3 style="margin-top:8px">Nhập tên 4 người chơi</h3>
+      <div class="names">
+        <div class="field"><label for="p1">Player 1</label><input id="p1" maxlength="24" value="Player 1"></div>
+        <div class="field"><label for="p2">Player 2</label><input id="p2" maxlength="24" value="Player 2"></div>
+        <div class="field"><label for="p3">Player 3</label><input id="p3" maxlength="24" value="Player 3"></div>
+        <div class="field"><label for="p4">Player 4</label><input id="p4" maxlength="24" value="Player 4"></div>
+      </div>
+      <button id="startBtn" class="btn primary" type="button" style="width:100%;margin-top:18px">Start Game</button>
+    </aside>
+  </div>
+</section>
+
+<section id="gameView" class="view hidden">
+  <div class="game-head">
+    <div>
+      <div id="roundLabel" class="eyebrow">QUESTION 1 / 4</div>
+      <h2 id="playerName">Player 1</h2>
+      <div class="meta"><span id="phasePill" class="pill cyan">READ CONTEXT</span></div>
+    </div>
+    <div id="timerRing" class="timer"><strong id="timerValue">32</strong><small>SEC</small></div>
+  </div>
+
+  <div class="progress"><div class="active"></div><div></div><div></div><div></div></div>
+
+  <section id="contextPhase" class="glass phase-card">
+    <div class="phase-head">
+      <div><div class="eyebrow">Context</div><h3 style="margin-top:7px">Đọc đoạn văn và nắm ý tổng thể.</h3></div>
+      <p>Passage sẽ tự ẩn khi hết giờ.</p>
+    </div>
+    <div id="contextText" class="context"></div>
+    <div class="controls">
+      <span class="status">Đừng cố nhớ từng chữ. Hãy nhớ: chuyện gì thay đổi, ai bị ảnh hưởng và mục đích là gì.</span>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button id="pauseBtn" class="icon-btn" type="button">Pause</button>
+        <button id="readyBtn" class="btn" type="button">Ready →</button>
+      </div>
+    </div>
+  </section>
+
+  <section id="quizPhase" class="hidden">
+    <div class="question-box">
+      <div class="eyebrow">Paraphrase Match</div>
+      <h3 style="margin-top:8px">Hoàn thành câu sao cho diễn đạt đúng ý của ngữ cảnh vừa đọc.</h3>
+      <div id="questionSentence" class="sentence"></div>
+    </div>
+    <div id="choices" class="choices"></div>
+    <div class="controls"><span class="status">15 giây • Phím 1–4 tương ứng A–D</span></div>
+  </section>
+
+  <section id="resultPhase" class="hidden result-grid">
+    <div id="verdict" class="verdict good">
+      <div id="verdictIcon" class="verdict-icon">✓</div>
+      <div><div id="verdictTitle" style="font-weight:950;font-size:1.06rem"></div><div id="verdictSub" class="muted" style="margin-top:3px;font-size:.9rem"></div></div>
+    </div>
+
+    <div class="glass rebuild">
+      <div class="eyebrow">Your completed sentence</div>
+      <div id="yourSentence" class="sentence"></div>
+    </div>
+
+    <div id="correctSentenceBox" class="glass rebuild hidden">
+      <div class="eyebrow">Correct sentence</div>
+      <div id="correctSentence" class="sentence"></div>
+    </div>
+
+    <div class="pair-grid">
+      <div class="pair-card"><div class="pair-label">Idea in the context</div><div id="sourceIdea" class="pair-main"></div></div>
+      <div class="pair-arrow">↔</div>
+      <div class="pair-card"><div class="pair-label">Paraphrase</div><div id="targetWord" class="pair-main"></div></div>
+    </div>
+
+    <div class="explain">
+      <strong>Vì sao đáp án đúng?</strong>
+      <div id="explanation" style="margin-top:7px"></div>
+      <div class="evidence" id="evidenceList"></div>
+      <div class="distractors" id="distractorList"></div>
+      <div id="selectedFeedback" class="selected"></div>
+    </div>
+
+    <div class="controls" style="justify-content:flex-end"><button id="nextBtn" class="btn primary" type="button">Next Player →</button></div>
+  </section>
+</section>
+
+<section id="summaryView" class="view hidden">
+  <div class="summary-head">
+    <div class="eyebrow">Completed</div>
+    <h2>Session Summary</h2>
+    <p class="lead" style="margin-left:auto;margin-right:auto">Tên những người trả lời đúng được tổng hợp bên dưới.</p>
+  </div>
+  <div id="winners" class="winners"></div>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Player</th><th>Question</th><th>Result</th><th>Answer Time</th><th>Paraphrase</th></tr></thead>
+      <tbody id="resultsBody"></tbody>
+    </table>
+  </div>
+  <div id="recap" class="recap"></div>
+  <div class="controls" style="justify-content:flex-end;margin-top:18px"><button id="restartBtn" class="btn primary" type="button">Play Again</button></div>
+</section>
+
+<footer class="footer"><span>Paraphrase Context Challenge</span><span>Understand the context before matching the words.</span></footer>
+</div>
+</main>
+
+<script>
+(() => {
+"use strict";
+
+const GAME = [
+{
+  readTime:32, answerTime:15,
+  context:[
+    `Effective July 1, newly added security precautions will be implemented. All identification badges worn are to be in plain sight every time a person enters one of the company's facilities. There will be no exceptions. It will no longer be possible to enter the factory grounds without a form of proper and valid company identification. The old red identification badge will no longer be accepted.`,
+    `In addition, the employee parking lot closest to the main entrance will no longer be available for use. Employees are requested to use the Warehouse Lot, formerly the truck parking area, which is located across Highway 117, and take the pedestrian overpass to come to the main entrance. The area in and around the main entrance can only be used for dropping off and picking up personnel. We appreciate your cooperation in this matter.`
+  ],
+  before:`Beginning July 1, the company's access and parking procedures will be `,
+  after:`.`,
+  options:["revised","verified","postponed","reimbursed"],
+  correct:"revised",
+  sourceIdea:"new security precautions + new parking arrangements",
+  target:"revised",
+  explanation:`“Revised” = được thay đổi/điều chỉnh. Đoạn văn nói cả quy định ra vào lẫn chỗ đỗ xe đều thay đổi, nên “revised” phù hợp nhất.`,
+  evidence:[
+    `Quy định thẻ ra vào được thay đổi.`,
+    `Nhân viên phải chuyển sang bãi đỗ xe khác.`
+  ],
+  wrong:{
+    verified:`“Verified” = được xác minh, không đúng ý thay đổi quy định.`,
+    postponed:`“Postponed” = bị hoãn, trong khi quy định mới vẫn áp dụng từ ngày 1/7.`,
+    reimbursed:`“Reimbursed” = được hoàn tiền, không liên quan đến nội dung.`
+  }
+},
+{
+  readTime:24, answerTime:15,
+  context:[
+    `Bestest Fitness has been providing our members the best environment for more than 15 years. Now, we have approximately 60,000 members all over Australia and we are very proud to say that our program is perfectly designed to fulfill our members' needs on a daily basis.`,
+    `Our experienced and qualified instructors can give you advice on the best fitness program by having a counseling session. And if you want to lose weight in a healthy manner, we are willing to help you find the best way to work out and slim down. We have also arranged excellent and safe exercise programs for kids and the disabled.`
+  ],
+  before:`Bestest Fitness presents its services as `,
+  after:` to meet a wide range of members' needs.`,
+  options:["tailored","delayed","monitored","reimbursed"],
+  correct:"tailored",
+  sourceIdea:"designed to fulfill members' needs + different programs for different groups",
+  target:"tailored",
+  explanation:`“Tailored” = được thiết kế phù hợp với nhu cầu cụ thể. Trung tâm có nhiều chương trình khác nhau cho từng nhóm khách hàng, nên từ này phù hợp nhất.`,
+  evidence:[
+    `Chương trình được thiết kế theo nhu cầu hội viên.`,
+    `Có tư vấn tập luyện và hỗ trợ giảm cân.`,
+    `Có chương trình riêng cho trẻ em và người khuyết tật.`
+  ],
+  wrong:{
+    delayed:`“Delayed” = bị trì hoãn, không đúng ngữ cảnh.`,
+    monitored:`“Monitored” = được theo dõi, không phải được thiết kế theo nhu cầu.`,
+    reimbursed:`“Reimbursed” = được hoàn tiền, không liên quan.`
+  }
+},
+{
+  readTime:20, answerTime:15,
+  context:[
+    `Please accept my thanks for attending the meeting this afternoon. This e-mail is intended to remind everyone of the details that were covered in today's meeting, which will appear in the Davidson Office press release at 9 a.m. tomorrow morning.`,
+    `The press release will provide details about the appointment of our new vice president. Any questions should be directed to Jennifer Wordsworth in the human resources department.`
+  ],
+  before:`The e-mail mainly `,
+  after:` the meeting before the information is made public the next morning.`,
+  options:["recaps","cancels","schedules","replaces"],
+  correct:"recaps",
+  sourceIdea:"remind everyone of the details covered in today's meeting",
+  target:"recaps",
+  explanation:`“Recaps” = tóm tắt/nhắc lại nội dung đã diễn ra. Email này nhắc lại các điểm chính của cuộc họp trước khi thông tin được công bố vào sáng hôm sau.`,
+  evidence:[
+    `Email nhắc lại nội dung đã được đề cập trong cuộc họp.`,
+    `Thông tin đó sẽ xuất hiện trong thông cáo báo chí vào sáng hôm sau.`
+  ],
+  wrong:{
+    cancels:`“Cancels” = hủy, nhưng cuộc họp đã diễn ra.`,
+    schedules:`“Schedules” = sắp lịch, không đúng vì email đang nhắc lại nội dung.`,
+    replaces:`“Replaces” = thay thế, không phù hợp với ý của đoạn.`
+  }
+},
+{
+  readTime:28, answerTime:15,
+  context:[
+    `Fresh Flow was formed by Dario Varela, who graduated ten years ago from the Saldivar School of Arts with a bachelor’s degree in Performing Arts. He started the group several years after graduation as a way to promote dance activities in Asheville.`,
+    `Tickets for Fresh Flow performances can be purchased online through the Fresh Flow Web site or at the Kiernan Theater box office. Sunday performances are geared specifically toward children and families. In addition to adding more child-friendly tunes, the group also makes adjustments to the facility. For example, screens broadcasting the show live are set up in the lobby, as some children may find the music and movement overwhelming and need to take a break.`
+  ],
+  before:`Fresh Flow `,
+  after:` its Sunday performances to families by changing both the music and the venue setup.`,
+  options:["tailors","postpones","monitors","reimburses"],
+  correct:"tailors",
+  sourceIdea:"geared toward children and families + child-friendly tunes + facility adjustments",
+  target:"tailors",
+  explanation:`“Tailors” = điều chỉnh cho phù hợp với một nhóm đối tượng. Fresh Flow thay đổi cả âm nhạc và cách bố trí không gian để phù hợp hơn với trẻ em và gia đình.`,
+  evidence:[
+    `Suất diễn Chủ nhật hướng đến trẻ em và gia đình.`,
+    `Nhạc được điều chỉnh thân thiện hơn với trẻ em.`,
+    `Có màn hình ở sảnh để trẻ có thể nghỉ mà vẫn theo dõi chương trình.`
+  ],
+  wrong:{
+    postpones:`“Postpones” = hoãn, không đúng vì buổi diễn chỉ được điều chỉnh.`,
+    monitors:`“Monitors” = theo dõi, không đúng ý của đoạn.`,
+    reimburses:`“Reimburses” = hoàn tiền, không liên quan.`
+  }
+}
+];
+
+const $=s=>document.querySelector(s);
+let players=["Player 1","Player 2","Player 3","Player 4"];
+let round=0,phase="setup",results=[],timerId=null,paused=false,timeLeft=0,timeTotal=1,answerStartedAt=null,soundOn=true;
+
+function esc(v){return String(v).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
+function cleanName(v,f){const x=String(v||"").trim().replace(/\s+/g," ").slice(0,24);return x||f}
+function beep(freq=650,dur=.07){
+  if(!soundOn)return;
+  try{const A=window.AudioContext||window.webkitAudioContext;if(!A)return;
+  const c=new A(),o=c.createOscillator(),g=c.createGain();o.frequency.value=freq;g.gain.value=.024;o.connect(g);g.connect(c.destination);o.start();
+  setTimeout(()=>{o.stop();c.close()},Math.max(40,dur*1000))}catch(_){}
+}
+function shuffle(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+function setView(name){
+  $("#setupView").classList.toggle("hidden",name!=="setup");
+  $("#gameView").classList.toggle("hidden",name!=="game");
+  $("#summaryView").classList.toggle("hidden",name!=="summary")
+}
+function clearTimer(){if(timerId!==null){clearInterval(timerId);timerId=null}}
+function paintTimer(){const pct=Math.max(0,Math.min(100,(timeLeft/timeTotal)*100));$("#timerRing").style.setProperty("--pct",pct.toFixed(2));$("#timerValue").textContent=String(Math.max(0,timeLeft))}
+function setTimer(sec,done){
+  clearTimer();timeTotal=Math.max(1,sec);timeLeft=timeTotal;paused=false;$("#pauseBtn").textContent="Pause";paintTimer();
+  timerId=setInterval(()=>{if(paused)return;timeLeft--;paintTimer();if(timeLeft<=0){clearTimer();done()}},1000)
+}
+function updateProgress(){
+  document.querySelectorAll(".progress div").forEach((e,i)=>{e.classList.remove("active","done");if(i<round)e.classList.add("done");if(i===round)e.classList.add("active")})
+}
+function renderContext(q){$("#contextText").innerHTML=q.context.map(p=>`<p>${esc(p)}</p>`).join("")}
+function renderSentence(q,w){return `${esc(q.before)}<span class="blank">${w?esc(w):"________"}</span>${esc(q.after)}`}
+
+function startRound(){
+  const q=GAME[round];phase="reading";updateProgress();
+  $("#roundLabel").textContent=`QUESTION ${round+1} / 4`;$("#playerName").textContent=players[round];$("#phasePill").textContent="READ CONTEXT";
+  $("#contextPhase").classList.remove("hidden");$("#quizPhase").classList.add("hidden");$("#resultPhase").classList.add("hidden");
+  renderContext(q);setTimer(q.readTime,showQuiz);beep(520,.08)
+}
+function showQuiz(){
+  if(phase!=="reading")return;
+  const q=GAME[round];phase="quiz";clearTimer();
+  $("#contextPhase").classList.add("hidden");$("#quizPhase").classList.remove("hidden");$("#resultPhase").classList.add("hidden");
+  $("#phasePill").textContent="PARAPHRASE MATCH";$("#questionSentence").innerHTML=renderSentence(q,null);
+  const box=$("#choices");box.innerHTML="";
+  shuffle(q.options).forEach((opt,i)=>{
+    const b=document.createElement("button");b.type="button";b.className="choice";b.dataset.option=opt;
+    b.innerHTML=`<span class="letter">${String.fromCharCode(65+i)}</span><span>${esc(opt)}</span>`;
+    b.addEventListener("click",()=>submit(opt,false));box.appendChild(b)
+  });
+  answerStartedAt=Date.now();setTimer(q.answerTime,()=>submit(null,true));beep(720,.06)
+}
+function submit(option,timedOut){
+  if(phase!=="quiz")return;
+  const q=GAME[round];phase="result";clearTimer();
+  const elapsed=answerStartedAt?Math.min(q.answerTime,Math.max(0,(Date.now()-answerStartedAt)/1000)):q.answerTime;
+  const correct=option===q.correct;
+  results.push({player:players[round],question:round+1,correct,timedOut,selected:option,seconds:Number(elapsed.toFixed(1)),pair:`${q.sourceIdea} ↔ ${q.target}`});
+  document.querySelectorAll(".choice").forEach(b=>{const v=b.dataset.option;if(v===q.correct)b.classList.add("correct");if(option&&v===option&&!correct)b.classList.add("wrong");b.disabled=true});
+  setTimeout(()=>showResult(q,option,correct,timedOut),140)
+}
+function showResult(q,option,correct,timedOut){
+  $("#quizPhase").classList.add("hidden");$("#resultPhase").classList.remove("hidden");$("#phasePill").textContent="EXPLANATION";
+  const v=$("#verdict");v.className=`verdict ${correct?"good":"bad"}`;
+  $("#verdictIcon").textContent=correct?"✓":(timedOut?"⏱":"×");
+  $("#verdictTitle").textContent=correct?"Correct — the meaning matches.":(timedOut?"Time's up — review the context.":"Not quite — compare the meanings.");
+  $("#verdictSub").textContent=`${players[round]} • Question ${round+1}`;
+  $("#yourSentence").innerHTML=renderSentence(q,option||"_____");
+  $("#sourceIdea").textContent=q.sourceIdea;$("#targetWord").textContent=q.target;$("#explanation").textContent=q.explanation;
+
+  const correctBox=$("#correctSentenceBox");
+  if(correct){correctBox.classList.add("hidden")}else{correctBox.classList.remove("hidden");$("#correctSentence").innerHTML=renderSentence(q,q.correct)}
+
+  $("#evidenceList").innerHTML=q.evidence.map((x,i)=>`<div><b>Evidence ${i+1}:</b> ${esc(x)}</div>`).join("");
+  const wrongs=Object.entries(q.wrong).map(([k,val])=>`<div><b>${esc(k)}:</b> ${esc(val)}</div>`).join("");
+  $("#distractorList").innerHTML=`<strong>Vì sao các đáp án nhiễu không phù hợp?</strong>${wrongs}`;
+
+  if(correct){
+    $("#selectedFeedback").innerHTML=`Bạn chọn <b>${esc(option)}</b>. Câu hoàn chỉnh giữ đúng ý tổng hợp của toàn bộ ngữ cảnh.`;
+  }else if(timedOut){
+    $("#selectedFeedback").innerHTML=`Đáp án đúng là <b>${esc(q.correct)}</b>.`;
+  }else{
+    $("#selectedFeedback").innerHTML=`Bạn chọn <b>${esc(option)}</b>. Hãy đối chiếu lại ý tổng thể của đoạn; đáp án đúng là <b>${esc(q.correct)}</b>.`;
+  }
+  $("#nextBtn").textContent=round===GAME.length-1?"View Summary →":"Next Player →";beep(correct?930:260,.10)
+}
+function next(){
+  clearTimer();
+  if(round<GAME.length-1){round++;startRound();window.scrollTo({top:0,behavior:"smooth"})}else showSummary()
+}
+function showSummary(){
+  phase="summary";setView("summary");
+  const correctResults=results.filter(r=>r.correct),w=$("#winners");w.innerHTML="";
+  if(!correctResults.length){
+    w.innerHTML=`<div class="winner" style="grid-column:1/-1"><div class="winner-icon">◇</div><strong>Chưa có người trả lời đúng</strong><small>Review lại 4 cặp paraphrase bên dưới.</small></div>`;
+  }else{
+    correctResults.forEach(r=>{const c=document.createElement("div");c.className="winner";c.innerHTML=`<div class="winner-icon">✓</div><strong>${esc(r.player)}</strong><small>Q${r.question} • ${r.seconds.toFixed(1)}s</small>`;w.appendChild(c)})
+  }
+  $("#resultsBody").innerHTML=results.map(r=>`<tr><td><b>${esc(r.player)}</b></td><td>Q${r.question}</td><td>${r.correct?"✓ Correct":(r.timedOut?"⏱ Time out":"× Incorrect")}</td><td>${r.seconds.toFixed(1)}s</td><td>${esc(r.pair)}</td></tr>`).join("");
+  $("#recap").innerHTML=GAME.map((q,i)=>`<div class="recap-card"><div class="eyebrow">Q${i+1}</div><div class="recap-pair">${esc(q.sourceIdea)} <span style="color:var(--gold)">↔</span> ${esc(q.target)}</div></div>`).join("");
+  beep(980,.12);window.scrollTo({top:0,behavior:"smooth"})
+}
+function reset(){clearTimer();round=0;phase="setup";results=[];paused=false;setView("setup");window.scrollTo({top:0,behavior:"smooth"})}
+
+$("#startBtn").addEventListener("click",()=>{
+  players=[cleanName($("#p1").value,"Player 1"),cleanName($("#p2").value,"Player 2"),cleanName($("#p3").value,"Player 3"),cleanName($("#p4").value,"Player 4")];
+  round=0;results=[];setView("game");startRound()
+});
+$("#readyBtn").addEventListener("click",showQuiz);
+$("#pauseBtn").addEventListener("click",()=>{if(phase!=="reading")return;paused=!paused;$("#pauseBtn").textContent=paused?"Resume":"Pause"});
+$("#nextBtn").addEventListener("click",next);
+$("#restartBtn").addEventListener("click",reset);
+$("#resetBtn").addEventListener("click",reset);
+$("#soundBtn").addEventListener("click",()=>{soundOn=!soundOn;$("#soundBtn").textContent=`Sound: ${soundOn?"On":"Off"}`;$("#soundBtn").setAttribute("aria-pressed",String(soundOn));if(soundOn)beep(650,.05)});
+document.addEventListener("keydown",e=>{if(phase!=="quiz")return;if(["INPUT","TEXTAREA","SELECT"].includes(document.activeElement?.tagName))return;const n=Number(e.key);if(n>=1&&n<=4){const b=$("#choices").children[n-1];if(b&&!b.disabled)b.click()}});
+})();
+</script>
+</body>
+</html>
